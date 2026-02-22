@@ -32,6 +32,19 @@
     touch-action: none;
   }
 
+  #app {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 390px;
+    /* dvh accounts for mobile browser chrome (address bar etc) */
+    height: 100dvh;
+    background: #fff;
+    overflow: hidden;
+  }
+
   img {
     user-select: none;
     -webkit-user-drag: none;
@@ -46,7 +59,6 @@
     transform: translateX(-50%);
     width: 100%;
     max-width: 390px;
-    height: 100%;
     background: #fff;
     overflow: hidden;
   }
@@ -470,6 +482,17 @@ function initAudio() {
       return a;
     });
   }
+
+  // Warm up the audio context on mobile by playing a silent sound immediately
+  // during the user gesture. This "unlocks" audio for all subsequent plays,
+  // including those inside setTimeout, which mobile browsers would otherwise block.
+  const silentCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const buf = silentCtx.createBuffer(1, 1, 22050);
+  const src = silentCtx.createBufferSource();
+  src.buffer = buf;
+  src.connect(silentCtx.destination);
+  src.start(0);
+  src.onended = () => silentCtx.close();
 }
 
 // Shuffle-bag queues: guarantee no immediate repeats, even distribution
