@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Alpaca or Llama?</title>
-<link rel="icon" type="image/png" href="favicon.png">
+<link rel="icon" type="image/png" href="images/ui/landing_illustration.png">
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-title" content="Alpaca or Llama">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -732,12 +732,13 @@ function buildEndCardBlurred(isWin) {
 
   const inner = document.createElement('div');
   inner.className = 'card-inner';
-  inner.style.cssText = 'filter: blur(12px); overflow: hidden; border-radius: 8px;';
+  // inner already has border-radius:8px + overflow:hidden from CSS — clips everything inside
 
   const img = document.createElement('img');
   img.className = 'card-photo';
   img.alt = '';
   img.draggable = false;
+  img.style.cssText = 'filter: blur(12px); transform: scale(1.05);'; // scale slightly to hide blur edge artifact
   img.onload = () => img.classList.add('loaded');
   img.src = isWin ? 'images/photos/end/end_win.png' : 'images/photos/end/end_lose.png';
   if (img.complete && img.naturalWidth > 0) img.classList.add('loaded');
@@ -745,7 +746,7 @@ function buildEndCardBlurred(isWin) {
 
   // White frosted overlay (fill 30% opacity) to match Figma spec
   const frost = document.createElement('div');
-  frost.style.cssText = 'position:absolute;inset:0;background:rgba(255,255,255,0.30);border-radius:8px;pointer-events:none;';
+  frost.style.cssText = 'position:absolute;inset:0;background:rgba(255,255,255,0.30);pointer-events:none;';
   inner.appendChild(frost);
 
   card.appendChild(inner);
