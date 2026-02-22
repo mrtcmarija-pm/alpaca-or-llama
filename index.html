@@ -3,8 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Алпака или Лама?</title>
+<title>Alpaca or Llama?</title>
 <link rel="icon" type="image/png" href="favicon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-title" content="Alpaca or Llama">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <style>
   @font-face {
     font-family: "Almono RNIDS";
@@ -320,9 +323,10 @@
   #result-illo-wrap .result-illo-img {
     width: 100%;
     max-width: 390px;
-    height: auto;
+    min-height: 200px;
+    object-fit: cover;
+    object-position: center bottom;
     display: block;
-    /* PNG is 1170x480 (wide) */
   }
 
   /* =============================================
@@ -480,28 +484,9 @@ function initAudio() {
     SOUNDS[key] = paths.map(src => {
       const a = new Audio(src);
       a.preload = 'auto';
-      // Play and immediately pause each element during the user gesture.
-      // This is the most reliable way to unlock Audio on Chrome iOS —
-      // it pre-authorizes the specific element for future .play() calls,
-      // even those inside setTimeout.
-      const p = a.play();
-      if (p !== undefined) {
-        p.then(() => { a.pause(); a.currentTime = 0; }).catch(() => {});
-      }
       return a;
     });
   }
-
-  // Also warm up AudioContext for any browsers that need it
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const buf = ctx.createBuffer(1, 1, 22050);
-    const src = ctx.createBufferSource();
-    src.buffer = buf;
-    src.connect(ctx.destination);
-    src.start(0);
-    src.onended = () => ctx.close();
-  } catch(e) {}
 }
 
 // Shuffle-bag queues: guarantee no immediate repeats, even distribution
@@ -1026,15 +1011,18 @@ const ILLO_MAP = {
 };
 
 function showResult(animalType, isCorrect) {
+  // Clear first to guarantee no old image flashes through
+  $resultIllo.src = '';
   $resultIllo.src = ILLO_MAP[`${animalType}-${isCorrect ? 'correct' : 'wrong'}`];
-  // Force reset before animating in
   $resultWrap.classList.remove('visible');
-  void $resultWrap.offsetWidth;
+  void $resultWrap.offsetWidth; // force reflow to restart transition
   $resultWrap.classList.add('visible');
 }
 
 function hideResult() {
   $resultWrap.classList.remove('visible');
+  // Clear src after transition so old image never lingers for next card
+  setTimeout(() => { $resultIllo.src = ''; }, 400);
 }
 
 // Tap illustration to dismiss
