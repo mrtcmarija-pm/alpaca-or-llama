@@ -1,0 +1,402 @@
+[
+  {
+    "type": "alpaca",
+    "file": "alpaca_01.png",
+    "path": "images/photos/alpaca1/alpaca_01.png"
+  },
+  {
+    "type": "alpaca",
+    "file": "alpaca_02.png",
+    "path": "images/photos/alpaca1/alpaca_02.png"
+  },
+  {
+    "type": "alpaca",
+    "file": "alpaca_03.png",
+    "path": "images/photos/alpaca1/alpaca_03.png"
+  },
+  {
+    "type": "alpaca",
+    "file": "alpaca_04.png",
+    "path": "images/photos/alpaca1/alpaca_04.png"
+  },
+  {
+    "type": "alpaca",
+    "file": "alpaca_05.png",
+    "path": "images/photos/alpaca1/alpaca_05.png"
+  },
+  {
+    "type": "alpaca",
+    "file": "alpaca_06.png",
+    "path": "images/photos/alpaca1/alpaca_06.png"
+  },
+  {
+    "type": "alpaca",
+    "file": "alpaca_07.png",
+    "path": "images/photos/alpaca1/alpaca_07.png"
+  },
+  {
+    "type": "alpaca",
+    "file": "alpaca_08.png",
+    "path": "images/photos/alpaca1/alpaca_08.png"
+  },
+  {
+    "type": "alpaca",
+    "file": "alpaca_09.png",
+    "path": "images/photos/alpaca1/alpaca_09.png"
+  },
+  {
+    "type": "alpaca",
+    "file": "alpaca_10.png",
+    "path": "images/photos/alpaca1/alpaca_10.png"
+  },
+  {
+    "type": "alpaca",
+    "file": "alpaca_11.png",
+    "path": "images/photos/alpaca1/alpaca_11.png"
+  },
+  {
+    "type": "alpaca",
+    "file": "alpaca_12.png",
+    "path": "images/photos/alpaca1/alpaca_12.png"
+  },
+  {
+    "type": "alpaca",
+    "file": "alpaca_13.png",
+    "path": "images/photos/alpaca1/alpaca_13.png"
+  },
+  {
+    "type": "alpaca",
+    "file": "alpaca_14.png",
+    "path": "images/photos/alpaca1/alpaca_14.png"
+  },
+  {
+    "type": "alpaca",
+    "file": "alpaca_15.png",
+    "path": "images/photos/alpaca1/alpaca_15.png"
+  },
+  {
+    "type": "alpaca",
+    "file": "alpaca_16.png",
+    "path": "images/photos/alpaca1/alpaca_16.png"
+  },
+  {
+    "type": "alpaca",
+    "file": "alpaca_17.png",
+    "path": "images/photos/alpaca1/alpaca_17.png"
+  },
+  {
+    "type": "alpaca",
+    "file": "alpaca_18.png",
+    "path": "images/photos/alpaca1/alpaca_18.png"
+  },
+  {
+    "type": "alpaca",
+    "file": "alpaca_19.png",
+    "path": "images/photos/alpaca1/alpaca_19.png"
+  },
+  {
+    "type": "alpaca",
+    "file": "alpaca_20.png",
+    "path": "images/photos/alpaca1/alpaca_20.png"
+  },
+  {
+    "type": "alpaca",
+    "file": "alpaca_21.png",
+    "path": "images/photos/alpaca2/alpaca_21.png"
+  },
+  {
+    "type": "alpaca",
+    "file": "alpaca_22.png",
+    "path": "images/photos/alpaca2/alpaca_22.png"
+  },
+  {
+    "type": "alpaca",
+    "file": "alpaca_23.png",
+    "path": "images/photos/alpaca2/alpaca_23.png"
+  },
+  {
+    "type": "alpaca",
+    "file": "alpaca_24.png",
+    "path": "images/photos/alpaca2/alpaca_24.png"
+  },
+  {
+    "type": "alpaca",
+    "file": "alpaca_25.png",
+    "path": "images/photos/alpaca2/alpaca_25.png"
+  },
+  {
+    "type": "alpaca",
+    "file": "alpaca_26.png",
+    "path": "images/photos/alpaca2/alpaca_26.png"
+  },
+  {
+    "type": "alpaca",
+    "file": "alpaca_27.png",
+    "path": "images/photos/alpaca2/alpaca_27.png"
+  },
+  {
+    "type": "alpaca",
+    "file": "alpaca_28.png",
+    "path": "images/photos/alpaca2/alpaca_28.png"
+  },
+  {
+    "type": "alpaca",
+    "file": "alpaca_29.png",
+    "path": "images/photos/alpaca2/alpaca_29.png"
+  },
+  {
+    "type": "alpaca",
+    "file": "alpaca_30.png",
+    "path": "images/photos/alpaca2/alpaca_30.png"
+  },
+  {
+    "type": "alpaca",
+    "file": "alpaca_31.png",
+    "path": "images/photos/alpaca2/alpaca_31.png"
+  },
+  {
+    "type": "alpaca",
+    "file": "alpaca_32.png",
+    "path": "images/photos/alpaca2/alpaca_32.png"
+  },
+  {
+    "type": "alpaca",
+    "file": "alpaca_33.png",
+    "path": "images/photos/alpaca2/alpaca_33.png"
+  },
+  {
+    "type": "alpaca",
+    "file": "alpaca_34.png",
+    "path": "images/photos/alpaca2/alpaca_34.png"
+  },
+  {
+    "type": "alpaca",
+    "file": "alpaca_35.png",
+    "path": "images/photos/alpaca2/alpaca_35.png"
+  },
+  {
+    "type": "alpaca",
+    "file": "alpaca_36.png",
+    "path": "images/photos/alpaca2/alpaca_36.png"
+  },
+  {
+    "type": "alpaca",
+    "file": "alpaca_37.png",
+    "path": "images/photos/alpaca2/alpaca_37.png"
+  },
+  {
+    "type": "alpaca",
+    "file": "alpaca_38.png",
+    "path": "images/photos/alpaca2/alpaca_38.png"
+  },
+  {
+    "type": "alpaca",
+    "file": "alpaca_39.png",
+    "path": "images/photos/alpaca2/alpaca_39.png"
+  },
+  {
+    "type": "alpaca",
+    "file": "alpaca_40.png",
+    "path": "images/photos/alpaca2/alpaca_40.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_01.png",
+    "path": "images/photos/llama1/llama_01.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_02.png",
+    "path": "images/photos/llama1/llama_02.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_03.png",
+    "path": "images/photos/llama1/llama_03.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_04.png",
+    "path": "images/photos/llama1/llama_04.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_05.png",
+    "path": "images/photos/llama1/llama_05.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_06.png",
+    "path": "images/photos/llama1/llama_06.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_07.png",
+    "path": "images/photos/llama1/llama_07.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_08.png",
+    "path": "images/photos/llama1/llama_08.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_09.png",
+    "path": "images/photos/llama1/llama_09.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_10.png",
+    "path": "images/photos/llama1/llama_10.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_11.png",
+    "path": "images/photos/llama1/llama_11.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_12.png",
+    "path": "images/photos/llama1/llama_12.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_13.png",
+    "path": "images/photos/llama1/llama_13.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_14.png",
+    "path": "images/photos/llama1/llama_14.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_15.png",
+    "path": "images/photos/llama1/llama_15.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_16.png",
+    "path": "images/photos/llama1/llama_16.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_17.png",
+    "path": "images/photos/llama1/llama_17.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_18.png",
+    "path": "images/photos/llama1/llama_18.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_19.png",
+    "path": "images/photos/llama1/llama_19.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_20.png",
+    "path": "images/photos/llama1/llama_20.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_21.png",
+    "path": "images/photos/llama2/llama_21.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_22.png",
+    "path": "images/photos/llama2/llama_22.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_23.png",
+    "path": "images/photos/llama2/llama_23.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_24.png",
+    "path": "images/photos/llama2/llama_24.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_25.png",
+    "path": "images/photos/llama2/llama_25.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_26.png",
+    "path": "images/photos/llama2/llama_26.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_27.png",
+    "path": "images/photos/llama2/llama_27.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_28.png",
+    "path": "images/photos/llama2/llama_28.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_29.png",
+    "path": "images/photos/llama2/llama_29.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_30.png",
+    "path": "images/photos/llama2/llama_30.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_31.png",
+    "path": "images/photos/llama2/llama_31.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_32.png",
+    "path": "images/photos/llama2/llama_32.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_33.png",
+    "path": "images/photos/llama2/llama_33.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_34.png",
+    "path": "images/photos/llama2/llama_34.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_35.png",
+    "path": "images/photos/llama2/llama_35.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_36.png",
+    "path": "images/photos/llama2/llama_36.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_37.png",
+    "path": "images/photos/llama2/llama_37.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_38.png",
+    "path": "images/photos/llama2/llama_38.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_39.png",
+    "path": "images/photos/llama2/llama_39.png"
+  },
+  {
+    "type": "llama",
+    "file": "llama_40.png",
+    "path": "images/photos/llama2/llama_40.png"
+  }
+]

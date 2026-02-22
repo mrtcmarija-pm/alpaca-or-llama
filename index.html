@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Алпака или Лама?</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<style>
+  @font-face {
+    font-family: "Almono RNIDS";
+    src: url("fonts/AlmonoRNIDS-SemiBold.woff2") format("woff2");
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-user-drag: none;
+  }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    background: #e0e0e0;
+    overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: none;
+  }
+
+  img {
+    user-select: none;
+    -webkit-user-drag: none;
+    pointer-events: none;
+    draggable: false;
+  }
+
+  #app {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 390px;
+    height: 100%;
+    background: #fff;
+    overflow: hidden;
+  }
+
+  /* =============================================
+     SCREENS
+  ============================================= */
+  .screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    position: absolute;
+    inset: 0;
+    background: #fff;
+  }
+  .screen.active { display: flex; }
+
+  /* =============================================
+     LANDING
+  ============================================= */
+  #landing {
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  #landing .logo-img {
+    width: 180px;
+    height: auto;
+    margin-bottom: 36px;
+  }
+
+  #landing .landing-illo-img {
+    width: 280px;
+    max-width: 78%;
+    height: auto;
+  }
+
+  /* =============================================
+     GAME SCREEN
+  ============================================= */
+  #game {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  /* --- Header ---
+   * Spec: top of screen → top of header section = 64px
+   * Badge height displayed: 64px → header bottom at 64+64=128px from top
+   */
+  .game-header {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 64px 8px 0;
+    width: 100%;
+  }
+
+  .header-badge {
+    flex-shrink: 0;
+    opacity: 1;
+    transition: opacity 0.2s;
+  }
+  .header-badge.hidden { opacity: 0; pointer-events: none; }
+  .header-badge .badge-img {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+  }
+
+  .header-logo-wrap {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    padding: 0 4px;
+  }
+  .header-logo-wrap .logo-img {
+    height: 56px;
+    width: auto;
+  }
+
+  /* --- Card Area ---
+   * Spec: bottom of header → top of card = 40px
+   * Horizontal padding = 24px each side (card x=24 to 366 in 390px frame)
+   */
+  .card-area {
+    flex-shrink: 0;
+    padding: 0 24px;
+    margin-top: 40px;
+    width: 100%;
+  }
+
+  /* Card stack - fixed aspect ratio 342:470 */
+  .card-stack {
+    position: relative;
+    width: 100%;
+    /* 342:470 ratio */
+    aspect-ratio: 342 / 470;
+    max-height: calc(100svh - 230px);
+    overflow: visible;
+  }
+
+  /* Individual card */
+  .card {
+    position: absolute;
+    inset: 0;
+    touch-action: none;
+    cursor: grab;
+    will-change: transform;
+  }
+  .card.back-card { cursor: default; }
+
+  /* Card inner clips image AND peek illustrations with rounded corners */
+  .card-inner {
+    position: absolute;
+    inset: 0;
+    border-radius: 8px;
+    overflow: hidden;   /* clips photo AND peek to card shape */
+    background: #ede8e0;
+  }
+
+  .card-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+  .card-photo.loaded { opacity: 1; }
+
+  /* Back card inactive overlay */
+  .card-overlay {
+    position: absolute;
+    inset: 0;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.5);
+    pointer-events: none;
+    z-index: 5;
+  }
+
+  /* --- Drag preview: PILL ---
+   * Positioned inside card (relative to .card), visible region inside card-inner.
+   * pill_alpaca: shown upper-right when swiping left
+   * pill_llama:  shown upper-left when swiping right
+   * Reference: pills appear at ~20px from top of card, 12px from respective edge
+   */
+  .drag-pill {
+    position: absolute;
+    top: 20px;
+    z-index: 20;
+    pointer-events: none;
+    opacity: 0;
+    line-height: 0;
+  }
+  .drag-pill .pill-img {
+    height: 56px;
+    width: auto;
+    display: block;
+  }
+  .drag-pill.alpaca-pill { right: 12px; }
+  .drag-pill.llama-pill  { left: 12px; }
+
+  /* --- Drag preview: PEEK ---
+   * Clipped inside card: rendered inside .card-inner (overflow:hidden, border-radius:8px)
+   * Sized at 195px tall (~50% bigger than previous 130px)
+   * Anchored to bottom corner, overflows downward but clipped by card-inner
+   */
+  .drag-peek {
+    position: absolute;
+    bottom: 0;
+    z-index: 20;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(40px);
+    line-height: 0;
+    /* No overflow here — clipped by card-inner */
+  }
+  .drag-peek .peek-img {
+    height: 195px;
+    width: auto;
+    display: block;
+  }
+  .drag-peek.alpaca-peek { right: 0; }
+  .drag-peek.llama-peek  { left: 0; }
+
+  /* =============================================
+     HEARTS ROW
+     Reference measurements:
+     - 10 hearts, centered, left/right padding=36px
+     - Heart display size: 24x24px
+     - Spacing: evenly distributed (justify-content: space-between)
+     - Gap from card bottom to hearts: ~20px margin-top
+  ============================================= */
+  .hearts-row {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 36px;
+    margin-top: 18px;
+    width: 100%;
+  }
+
+  .heart-img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    display: block;
+    flex-shrink: 0;
+  }
+
+  @keyframes heartBounce {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.5); }
+    70%  { transform: scale(0.88); }
+    100% { transform: scale(1); }
+  }
+  .heart-bounce { animation: heartBounce 0.28s ease-out; }
+
+  /* =============================================
+     RESULT ILLUSTRATION OVERLAY
+     - No white background sheet
+     - Full-width illustration slides up from bottom
+     - Transparent, only the illustration image
+     - Dismissable by tapping the illustration
+  ============================================= */
+  #result-overlay {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 100;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    /* flush to bottom — no margin, no padding, no safe-area offset */
+    margin: 0;
+    padding: 0;
+  }
+
+  #result-illo-wrap {
+    width: 100%;
+    pointer-events: none; /* off by default, enabled when visible */
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(60px);
+    transition: opacity 0.28s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    line-height: 0;
+    /* No padding-bottom — illustration must be flush to screen bottom */
+  }
+
+  #result-illo-wrap.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  #result-illo-wrap .result-illo-img {
+    width: 100%;
+    max-width: 390px;
+    height: auto;
+    display: block;
+    /* PNG is 1170x480 (wide) */
+  }
+
+  /* =============================================
+     END SCREEN BUTTON
+  ============================================= */
+  .end-spacer { flex: 1; }
+
+  #end-btn {
+    flex-shrink: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    height: 50px;
+    border-radius: 36px;
+    border: none;
+    outline: none;
+    margin: 12px 24px 40px;
+    width: calc(100% - 48px);
+    font-family: "Almono RNIDS", system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 20px;
+    line-height: 20px;
+    letter-spacing: -1px;
+    color: #464646;
+    text-align: center;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  #end-btn.visible { display: flex; }
+
+  /* =============================================
+     ANIMATIONS
+  ============================================= */
+  @keyframes wiggle {
+    0%   { transform: translateX(0) rotate(0deg); }
+    15%  { transform: translateX(-10px) rotate(-4deg); }
+    35%  { transform: translateX(10px) rotate(4deg); }
+    55%  { transform: translateX(-7px) rotate(-2.5deg); }
+    75%  { transform: translateX(7px) rotate(2.5deg); }
+    100% { transform: translateX(0) rotate(0deg); }
+  }
+  .card.wiggling { animation: wiggle 0.75s ease-in-out; }
+
+  /* Snap-back spring when swipe not committed */
+  .card.snap-back {
+    transition: transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  }
+
+  @keyframes flyLeft {
+    to { transform: translateX(-160%) rotate(-22deg); opacity: 0; }
+  }
+  @keyframes flyRight {
+    to { transform: translateX(160%) rotate(22deg); opacity: 0; }
+  }
+  .card.fly-left  { animation: flyLeft  0.22s ease-in forwards; }
+  .card.fly-right { animation: flyRight 0.22s ease-in forwards; }
+
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ==================== LANDING ==================== -->
+  <div id="landing" class="screen active">
+    <img class="logo-img" src="images/ui/logo.png" alt="Алпака или Лама?" draggable="false">
+    <img class="landing-illo-img" src="images/ui/landing_illustration.png" alt="" draggable="false">
+  </div>
+
+  <!-- ==================== GAME ==================== -->
+  <div id="game" class="screen">
+
+    <!-- Header -->
+    <div class="game-header">
+      <div id="badge-alpaca" class="header-badge">
+        <img class="badge-img" src="images/ui/badge_alpaca.png" alt="Алпака" draggable="false">
+      </div>
+      <div class="header-logo-wrap">
+        <img class="logo-img" src="images/ui/logo.png" alt="Алпака или Лама?" draggable="false">
+      </div>
+      <div id="badge-llama" class="header-badge">
+        <img class="badge-img" src="images/ui/badge_llama.png" alt="Лама" draggable="false">
+      </div>
+    </div>
+
+    <!-- Card area -->
+    <div class="card-area">
+      <div class="card-stack" id="card-stack"></div>
+    </div>
+
+    <!-- Hearts -->
+    <div class="hearts-row" id="hearts-row"></div>
+
+    <!-- Flexible spacer (pushes end button to bottom) -->
+    <div class="end-spacer"></div>
+
+    <!-- Result illustration overlay (transparent, no sheet) -->
+    <div id="result-overlay">
+      <div id="result-illo-wrap">
+        <img id="result-illo" class="result-illo-img" src="" alt="" draggable="false">
+      </div>
+    </div>
+
+    <!-- End screen restart button -->
+    <button id="end-btn">ПОЧНИ ПОНОВО</button>
+
+  </div>
+
+</div>
+
+<script>
+'use strict';
+
+// ============================================================
+//  PREVENT NATIVE IMAGE DRAG everywhere
+// ============================================================
+document.addEventListener('dragstart', e => e.preventDefault());
+
+// ============================================================
+//  CARD DATA  (80 photos: 40 alpaca + 40 llama)
+// ============================================================
+const CARDS_DATA = (function() {
+  const cards = [];
+  for (let i = 1; i <= 20; i++)
+    cards.push({ type: 'alpaca', path: `images/photos/alpaca1/alpaca_${String(i).padStart(2,'0')}.png` });
+  for (let i = 21; i <= 40; i++)
+    cards.push({ type: 'alpaca', path: `images/photos/alpaca2/alpaca_${String(i).padStart(2,'0')}.png` });
+  for (let i = 1; i <= 20; i++)
+    cards.push({ type: 'llama', path: `images/photos/llama1/llama_${String(i).padStart(2,'0')}.png` });
+  for (let i = 21; i <= 40; i++)
+    cards.push({ type: 'llama', path: `images/photos/llama2/llama_${String(i).padStart(2,'0')}.png` });
+  return cards;
+})();
+
+// ============================================================
+//  AUDIO — Recorded sounds
+//  correct_1/2/3.m4a, wrong_1/2/3.m4a (randomized each play)
+//  win.m4a, lose.m4a
+// ============================================================
+const SOUNDS = {};
+let audioUnlocked = false;
+
+function initAudio() {
+  if (audioUnlocked) return;
+  audioUnlocked = true;
+
+  const files = {
+    correct: ['sounds/correct_1.m4a', 'sounds/correct_2.m4a', 'sounds/correct_3.m4a'],
+    wrong:   ['sounds/wrong_1.m4a',   'sounds/wrong_2.m4a',   'sounds/wrong_3.m4a'],
+    win:     ['sounds/win.m4a'],
+    lose:    ['sounds/lose.m4a'],
+  };
+
+  for (const [key, paths] of Object.entries(files)) {
+    SOUNDS[key] = paths.map(src => {
+      const a = new Audio(src);
+      a.preload = 'auto';
+      return a;
+    });
+  }
+}
+
+// Shuffle-bag queues: guarantee no immediate repeats, even distribution
+const SOUND_BAGS = {};
+
+function getNextFromBag(key) {
+  const variants = SOUNDS[key];
+  if (!variants || variants.length === 0) return null;
+  if (variants.length === 1) return variants[0];
+
+  // Refill and shuffle bag when empty
+  if (!SOUND_BAGS[key] || SOUND_BAGS[key].length === 0) {
+    const shuffled = [...variants];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    // Avoid repeating the last sound from the previous bag
+    // by swapping the first element if it matches the last played
+    if (SOUND_BAGS[key + '_last'] && shuffled[0] === SOUND_BAGS[key + '_last']) {
+      const swapIdx = Math.floor(Math.random() * (shuffled.length - 1)) + 1;
+      [shuffled[0], shuffled[swapIdx]] = [shuffled[swapIdx], shuffled[0]];
+    }
+    SOUND_BAGS[key] = shuffled;
+  }
+
+  const next = SOUND_BAGS[key].shift();
+  SOUND_BAGS[key + '_last'] = next; // remember for next bag refill
+  return next;
+}
+
+// Track all currently playing clones so we can stop them
+const activeSounds = new Set();
+
+function stopAllSounds() {
+  for (const clone of activeSounds) {
+    clone.pause();
+    clone.currentTime = 0;
+  }
+  activeSounds.clear();
+}
+
+function playSound(key) {
+  const source = getNextFromBag(key);
+  if (!source) return;
+  const clone = source.cloneNode();
+  activeSounds.add(clone);
+  clone.addEventListener('ended', () => activeSounds.delete(clone));
+  clone.play().catch(() => {});
+}
+
+function soundCorrect() { playSound('correct'); }
+function soundWrong()   { playSound('wrong');   }
+function soundWin()     { playSound('win');      }
+function soundLose()    { playSound('lose');     }
+
+// ============================================================
+//  SHOE RANDOMIZER
+// ============================================================
+let shoeQueue = [];
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function dealSession(n) {
+  if (shoeQueue.length < n) shoeQueue = shuffle(CARDS_DATA);
+  return shoeQueue.splice(0, n);
+}
+
+// ============================================================
+//  STATE
+// ============================================================
+let appState   = 'LANDING'; // LANDING | ROUND_ACTIVE | ROUND_RESULT | ROUND_END
+let session    = [];
+let cardIndex  = 0;
+let score      = 0;
+let hearts     = [];
+
+// Swipe tracking
+let dragging   = false;
+let ptStartX   = 0;
+let ptCurrDX   = 0;
+let ptLastX    = 0;
+let ptLastTime = 0;
+let ptVelocity = 0;
+let cardW      = 0;
+let activeCard = null;
+
+// Wiggle
+let wiggleTimeout = null;
+
+// ============================================================
+//  DOM
+// ============================================================
+const $landing      = document.getElementById('landing');
+const $game         = document.getElementById('game');
+const $stack        = document.getElementById('card-stack');
+const $heartsRow    = document.getElementById('hearts-row');
+const $resultOv     = document.getElementById('result-overlay');
+const $resultWrap   = document.getElementById('result-illo-wrap');
+const $resultIllo   = document.getElementById('result-illo');
+const $endBtn       = document.getElementById('end-btn');
+const $badgeAlpaca  = document.getElementById('badge-alpaca');
+const $badgeLlama   = document.getElementById('badge-llama');
+const $endSpacer    = document.querySelector('.end-spacer');
+
+// ============================================================
+//  LANDING → GAME
+// ============================================================
+$landing.addEventListener('pointerdown', function handler() {
+  $landing.removeEventListener('pointerdown', handler);
+  initAudio();
+  showScreen('game');
+  beginSession();
+});
+
+function showScreen(id) {
+  ['landing','game'].forEach(s => {
+    document.getElementById(s).classList.toggle('active', s === id);
+  });
+}
+
+// ============================================================
+//  SESSION
+// ============================================================
+function beginSession() {
+  stopAllSounds();
+  session    = dealSession(10);
+  cardIndex  = 0;
+  score      = 0;
+  hearts     = Array(10).fill('empty');
+  appState   = 'ROUND_ACTIVE';
+
+  // Reset UI
+  $badgeAlpaca.classList.remove('hidden');
+  $badgeLlama.classList.remove('hidden');
+  $endBtn.classList.remove('visible');
+  $endSpacer.style.display = '';
+  hideResult();
+
+  renderHearts();
+  renderCards(true /* firstCard wiggle */);
+}
+
+$endBtn.addEventListener('click', beginSession);
+
+// ============================================================
+//  HEARTS
+// ============================================================
+function renderHearts() {
+  $heartsRow.innerHTML = '';
+  hearts.forEach((state, i) => {
+    const img = document.createElement('img');
+    img.className = 'heart-img';
+    img.id        = `heart-${i}`;
+    img.src       = heartSrc(state);
+    img.alt       = '';
+    img.draggable = false;
+    $heartsRow.appendChild(img);
+  });
+}
+
+function heartSrc(s) {
+  return s === 'correct' ? 'images/ui/heart_correct.png'
+       : s === 'wrong'   ? 'images/ui/heart_wrong.png'
+       : 'images/ui/heart_empty.png';
+}
+
+function updateHeart(idx, result) {
+  hearts[idx] = result;
+  const img = document.getElementById(`heart-${idx}`);
+  if (!img) return;
+  img.src = heartSrc(result);
+  img.classList.remove('heart-bounce');
+  void img.offsetWidth;
+  img.classList.add('heart-bounce');
+  img.addEventListener('animationend', () => img.classList.remove('heart-bounce'), { once: true });
+}
+
+// ============================================================
+//  CARD RENDERING
+// ============================================================
+function renderCards(isFirstInSession) {
+  $stack.innerHTML = '';
+  activeCard = null;
+  cardW = 0;
+
+  const isLastCard = (cardIndex === session.length - 1); // 10th card
+
+  if (isLastCard) {
+    // Behind the last card: show the end card blurred instead of empty white.
+    // We don't know final score yet (this card hasn't been answered), so we
+    // compute the CURRENT score to predict win/lose for the preview.
+    // (Will be corrected precisely when showEndScreen is called.)
+    const previewWin = score >= 5;
+    $stack.appendChild(buildEndCardBlurred(previewWin));
+  } else if (cardIndex + 1 < session.length) {
+    // Normal back card (next photo)
+    $stack.appendChild(buildCard(session[cardIndex + 1], false));
+  }
+
+  // Front card (current) — rendered on top
+  if (cardIndex < session.length) {
+    const front = buildCard(session[cardIndex], true);
+    $stack.appendChild(front);
+    activeCard = front;
+    attachSwipeListeners(front);
+  }
+
+  // Preload card after next
+  const preIdx = cardIndex + 2;
+  if (preIdx < session.length) {
+    const pre = new Image();
+    pre.src = session[preIdx].path;
+  }
+
+  // Wiggle on first card of session
+  if (isFirstInSession && activeCard) {
+    clearTimeout(wiggleTimeout);
+    wiggleTimeout = setTimeout(() => {
+      if (activeCard && appState === 'ROUND_ACTIVE') {
+        activeCard.classList.add('wiggling');
+        activeCard.addEventListener('animationend', () => {
+          if (activeCard) activeCard.classList.remove('wiggling');
+        }, { once: true });
+      }
+    }, 350);
+  }
+}
+
+// Build a blurred end-card placeholder shown behind the last active card
+function buildEndCardBlurred(isWin) {
+  const card = document.createElement('div');
+  card.className = 'card back-card end-card-blurred';
+  card.style.zIndex = '1';
+  card.style.cursor = 'default';
+
+  const inner = document.createElement('div');
+  inner.className = 'card-inner';
+  inner.style.cssText = 'filter: blur(12px); overflow: hidden; border-radius: 8px;';
+
+  const img = document.createElement('img');
+  img.className = 'card-photo';
+  img.alt = '';
+  img.draggable = false;
+  img.onload = () => img.classList.add('loaded');
+  img.src = isWin ? 'images/photos/end/end_win.png' : 'images/photos/end/end_lose.png';
+  if (img.complete && img.naturalWidth > 0) img.classList.add('loaded');
+  inner.appendChild(img);
+
+  // White frosted overlay (fill 30% opacity) to match Figma spec
+  const frost = document.createElement('div');
+  frost.style.cssText = 'position:absolute;inset:0;background:rgba(255,255,255,0.30);border-radius:8px;pointer-events:none;';
+  inner.appendChild(frost);
+
+  card.appendChild(inner);
+  return card;
+}
+
+function buildCard(data, isFront) {
+  const card = document.createElement('div');
+  card.className = 'card' + (isFront ? '' : ' back-card');
+  card.style.zIndex = isFront ? '2' : '1';
+  card.dataset.cardType = data.type;
+
+  // card-inner: clips photo + peek to rounded rect (overflow:hidden)
+  const inner = document.createElement('div');
+  inner.className = 'card-inner';
+
+  const photo = document.createElement('img');
+  photo.className = 'card-photo';
+  photo.alt = '';
+  photo.draggable = false;
+  photo.onload = () => photo.classList.add('loaded');
+  photo.src = data.path;
+  if (photo.complete && photo.naturalWidth > 0) photo.classList.add('loaded');
+
+  inner.appendChild(photo);
+
+  if (!isFront) {
+    const overlay = document.createElement('div');
+    overlay.className = 'card-overlay';
+    inner.appendChild(overlay);
+  } else {
+    // Peek elements go INSIDE card-inner so they are clipped by overflow:hidden
+    inner.appendChild(makePeek('alpaca'));
+    inner.appendChild(makePeek('llama'));
+  }
+
+  card.appendChild(inner);
+
+  if (isFront) {
+    // Pill elements go outside card-inner but inside .card
+    // They need to render on top of the rounded card visually
+    // We clip them with a matching rounded wrapper
+    const pillWrap = document.createElement('div');
+    pillWrap.style.cssText = 'position:absolute;inset:0;border-radius:8px;overflow:hidden;pointer-events:none;z-index:20;';
+    pillWrap.appendChild(makePill('alpaca'));
+    pillWrap.appendChild(makePill('llama'));
+    card.appendChild(pillWrap);
+  }
+
+  return card;
+}
+
+function makePill(animal) {
+  const el = document.createElement('div');
+  el.className = `drag-pill ${animal}-pill`;
+  const img = document.createElement('img');
+  img.className = 'pill-img';
+  img.src = `images/ui/pill_${animal}.png`;
+  img.alt = '';
+  img.draggable = false;
+  el.appendChild(img);
+  return el;
+}
+
+function makePeek(animal) {
+  const el = document.createElement('div');
+  el.className = `drag-peek ${animal}-peek`;
+  const img = document.createElement('img');
+  img.className = 'peek-img';
+  img.src = `images/ui/peek_${animal}.png`;
+  img.alt = '';
+  img.draggable = false;
+  el.appendChild(img);
+  return el;
+}
+
+// ============================================================
+//  SWIPE
+// ============================================================
+function attachSwipeListeners(el) {
+  el.addEventListener('pointerdown', onPD, { passive: false });
+}
+
+function onPD(e) {
+  if (appState !== 'ROUND_ACTIVE') return;
+  e.preventDefault();
+
+  // Cancel wiggle
+  clearTimeout(wiggleTimeout);
+  if (activeCard) activeCard.classList.remove('wiggling');
+
+  dragging   = true;
+  ptStartX   = e.clientX;
+  ptCurrDX   = 0;
+  ptLastX    = e.clientX;
+  ptLastTime = Date.now();
+  ptVelocity = 0;
+
+  // Measure card width now
+  if (!cardW || cardW < 10) {
+    cardW = activeCard.getBoundingClientRect().width || 300;
+  }
+
+  activeCard.setPointerCapture(e.pointerId);
+  activeCard.style.transition = 'none';
+
+  activeCard.addEventListener('pointermove', onPM, { passive: false });
+  activeCard.addEventListener('pointerup',     onPU);
+  activeCard.addEventListener('pointercancel', onPC);
+}
+
+function onPM(e) {
+  if (!dragging) return;
+  e.preventDefault();
+  const now = Date.now();
+  const dt  = now - ptLastTime;
+  if (dt > 0) ptVelocity = (e.clientX - ptLastX) / dt * 1000;
+  ptLastX    = e.clientX;
+  ptLastTime = now;
+  ptCurrDX   = e.clientX - ptStartX;
+  applyDrag(ptCurrDX);
+}
+
+function onPU(e) {
+  if (!dragging) return;
+  dragging = false;
+  removePtrListeners();
+  tryCommit(ptCurrDX, ptVelocity);
+}
+
+function onPC(e) {
+  if (!dragging) return;
+  dragging = false;
+  removePtrListeners();
+  snapBack();
+}
+
+function removePtrListeners() {
+  if (!activeCard) return;
+  activeCard.removeEventListener('pointermove', onPM);
+  activeCard.removeEventListener('pointerup',   onPU);
+  activeCard.removeEventListener('pointercancel', onPC);
+}
+
+function applyDrag(dx) {
+  if (!activeCard) return;
+  const cw  = cardW || 300;
+  const rot = (dx / cw) * 15;
+  activeCard.style.transform = `translateX(${dx}px) rotate(${rot}deg)`;
+
+  const progress = Math.min(Math.abs(dx) / (0.22 * cw), 1);
+
+  // Pills are in a pillWrap div inside .card; peeks are inside .card-inner
+  const pillA = activeCard.querySelector('.alpaca-pill');
+  const pillL = activeCard.querySelector('.llama-pill');
+  const peekA = activeCard.querySelector('.alpaca-peek');
+  const peekL = activeCard.querySelector('.llama-peek');
+
+  if (dx < 0) {
+    showPreview(pillA, progress, false);
+    showPreview(peekA, progress, true);
+    hidePreview(pillL); hidePreview(peekL);
+  } else if (dx > 0) {
+    showPreview(pillL, progress, false);
+    showPreview(peekL, progress, true);
+    hidePreview(pillA); hidePreview(peekA);
+  } else {
+    [pillA, pillL, peekA, peekL].forEach(hidePreview);
+  }
+}
+
+function showPreview(el, progress, isPeek) {
+  if (!el) return;
+  el.style.opacity = progress;
+  if (isPeek) el.style.transform = `translateY(${40 - progress * 40}px)`;
+}
+
+function hidePreview(el) {
+  if (!el) return;
+  el.style.opacity = 0;
+}
+
+// ============================================================
+//  COMMIT / SNAP BACK
+// ============================================================
+function tryCommit(dx, vx) {
+  const cw    = cardW || 300;
+  const distOk = Math.abs(dx) >= 0.22 * cw;
+  const velOk  = Math.abs(vx) >= 900;
+  if (distOk || velOk) {
+    commitSwipe(dx < 0 ? 'left' : 'right');
+  } else {
+    snapBack();
+  }
+}
+
+function snapBack() {
+  if (!activeCard) return;
+  activeCard.style.transition = '';
+  activeCard.classList.add('snap-back');
+  activeCard.style.transform = 'translateX(0) rotate(0deg)';
+  applyDrag(0);
+  activeCard.addEventListener('transitionend', () => {
+    if (activeCard) activeCard.classList.remove('snap-back');
+  }, { once: true });
+}
+
+// ============================================================
+//  COMMIT SEQUENCE
+// ============================================================
+function commitSwipe(direction) {
+  if (appState !== 'ROUND_ACTIVE') return;
+  stopAllSounds();
+  appState = 'ROUND_RESULT';
+
+  const guess     = direction === 'left' ? 'alpaca' : 'llama';
+  const data      = session[cardIndex];
+  const isCorrect = guess === data.type;
+  if (isCorrect) score++;
+
+  // 1) Fly card off
+  const flyingCard = activeCard;
+  activeCard = null;
+  flyingCard.style.transition = '';
+  flyingCard.classList.add(direction === 'left' ? 'fly-left' : 'fly-right');
+  flyingCard.addEventListener('animationend', () => {
+    flyingCard.remove();
+  }, { once: true });
+
+  // 3+4) Update heart + sound at 80ms
+  setTimeout(() => {
+    updateHeart(cardIndex, isCorrect ? 'correct' : 'wrong');
+    isCorrect ? soundCorrect() : soundWrong();
+
+    // If this was the last card, correct the blurred end-card preview
+    // (score is now final — update the blurred background to show correct end image)
+    if (cardIndex === session.length - 1) {
+      const blurredInner = $stack.querySelector('.end-card-blurred .card-inner');
+      if (blurredInner) {
+        const blurImg = blurredInner.querySelector('.card-photo');
+        if (blurImg) {
+          const finalWin = score >= 5;
+          blurImg.src = finalWin ? 'images/photos/end/end_win.png' : 'images/photos/end/end_lose.png';
+        }
+      }
+    }
+  }, 80);
+
+  // 5+6) Show result at 180ms
+  setTimeout(() => {
+    showResult(data.type, isCorrect);
+  }, 180);
+}
+
+// ============================================================
+//  RESULT OVERLAY
+// ============================================================
+const ILLO_MAP = {
+  'alpaca-correct': 'images/ui/result_happy_alpaca.png',
+  'alpaca-wrong':   'images/ui/result_sad_alpaca.png',
+  'llama-correct':  'images/ui/result_happy_llama.png',
+  'llama-wrong':    'images/ui/result_sad_llama.png',
+};
+
+function showResult(animalType, isCorrect) {
+  $resultIllo.src = ILLO_MAP[`${animalType}-${isCorrect ? 'correct' : 'wrong'}`];
+  // Force reset before animating in
+  $resultWrap.classList.remove('visible');
+  void $resultWrap.offsetWidth;
+  $resultWrap.classList.add('visible');
+}
+
+function hideResult() {
+  $resultWrap.classList.remove('visible');
+}
+
+// Tap illustration to dismiss
+$resultWrap.addEventListener('pointerdown', (e) => {
+  if (appState !== 'ROUND_RESULT') return;
+  e.stopPropagation();
+  stopAllSounds();
+  hideResult();
+  cardIndex++;
+  setTimeout(() => {
+    // After ALL 10 cards (including the 10th result has been dismissed)
+    if (cardIndex >= 10) {
+      showEndScreen();
+    } else {
+      appState = 'ROUND_ACTIVE';
+      renderCards(false);
+    }
+  }, 300);
+});
+
+// ============================================================
+//  END SCREEN
+// ============================================================
+function showEndScreen() {
+  appState = 'ROUND_END';
+  const isWin = score >= 5;
+
+  $badgeAlpaca.classList.add('hidden');
+  $badgeLlama.classList.add('hidden');
+
+  // The blurred end card is already in $stack (placed there by renderCards for last card).
+  // Swap it for a clean, unblurred version with a smooth transition.
+  $stack.innerHTML = '';
+  const card = document.createElement('div');
+  card.className = 'card back-card';
+  card.style.zIndex = '1';
+  card.style.cursor = 'default';
+
+  const inner = document.createElement('div');
+  inner.className = 'card-inner';
+
+  const img = document.createElement('img');
+  img.className = 'card-photo';
+  img.alt = '';
+  img.draggable = false;
+  img.onload = () => {
+    img.classList.add('loaded');
+    // Fade in smoothly to replace the blurred preview
+    inner.style.transition = 'filter 0.4s ease';
+    inner.style.filter = 'none';
+  };
+  img.src = isWin ? 'images/photos/end/end_win.png' : 'images/photos/end/end_lose.png';
+  if (img.complete && img.naturalWidth > 0) {
+    img.classList.add('loaded');
+  }
+
+  inner.appendChild(img);
+  card.appendChild(inner);
+  $stack.appendChild(card);
+
+  $endBtn.style.background = isWin ? '#FFD43B' : '#6DC7DB';
+  $endBtn.classList.add('visible');
+
+  isWin ? soundWin() : soundLose();
+}
+</script>
+</body>
+</html>
