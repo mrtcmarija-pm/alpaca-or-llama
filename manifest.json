@@ -7,7 +7,7 @@
   "theme_color": "#ffffff",
   "icons": [
     {
-      "src": "favicon.png",
+      "src": "images/ui/landing_illustration.png",
       "sizes": "any",
       "type": "image/png"
     }
