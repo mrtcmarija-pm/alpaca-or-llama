@@ -105,15 +105,14 @@
   }
 
   /* --- Header ---
-   * Spec: top of screen → top of header section = 64px
-   * Badge height displayed: 64px → header bottom at 64+64=128px from top
+   * Top padding reduced to 12px to fit browser chrome on mobile
    */
   .game-header {
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 64px 8px 0;
+    padding: 12px 8px 0;
     width: 100%;
   }
 
@@ -122,7 +121,7 @@
     opacity: 1;
     transition: opacity 0.2s;
   }
-  .header-badge.hidden { opacity: 0; pointer-events: none; }
+  .header-badge.hidden { opacity: 0; pointer-events: none; visibility: hidden; }
   .header-badge .badge-img {
     width: 64px;
     height: 64px;
@@ -141,13 +140,12 @@
   }
 
   /* --- Card Area ---
-   * Spec: bottom of header → top of card = 40px
-   * Horizontal padding = 24px each side (card x=24 to 366 in 390px frame)
+   * Gap from header to card reduced to 20px to fit browser chrome
    */
   .card-area {
     flex-shrink: 0;
     padding: 0 24px;
-    margin-top: 40px;
+    margin-top: 20px;
     width: 100%;
   }
 
@@ -287,14 +285,17 @@
      - Dismissable by tapping the illustration
   ============================================= */
   #result-overlay {
-    position: absolute;
-    left: 0; right: 0; bottom: 0;
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 390px;
+    bottom: 0;
     pointer-events: none;
     z-index: 100;
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    /* flush to bottom — no margin, no padding, no safe-area offset */
     margin: 0;
     padding: 0;
   }
@@ -327,7 +328,7 @@
   /* =============================================
      END SCREEN BUTTON
   ============================================= */
-  .end-spacer { flex: 1; }
+  .end-spacer { display: none; }
 
   #end-btn {
     flex-shrink: 0;
@@ -338,7 +339,7 @@
     border-radius: 36px;
     border: none;
     outline: none;
-    margin: 12px 24px 40px;
+    margin: 24px 24px 0;
     width: calc(100% - 48px);
     font-family: "Almono RNIDS", system-ui, sans-serif;
     font-weight: 600;
@@ -479,20 +480,28 @@ function initAudio() {
     SOUNDS[key] = paths.map(src => {
       const a = new Audio(src);
       a.preload = 'auto';
+      // Play and immediately pause each element during the user gesture.
+      // This is the most reliable way to unlock Audio on Chrome iOS —
+      // it pre-authorizes the specific element for future .play() calls,
+      // even those inside setTimeout.
+      const p = a.play();
+      if (p !== undefined) {
+        p.then(() => { a.pause(); a.currentTime = 0; }).catch(() => {});
+      }
       return a;
     });
   }
 
-  // Warm up the audio context on mobile by playing a silent sound immediately
-  // during the user gesture. This "unlocks" audio for all subsequent plays,
-  // including those inside setTimeout, which mobile browsers would otherwise block.
-  const silentCtx = new (window.AudioContext || window.webkitAudioContext)();
-  const buf = silentCtx.createBuffer(1, 1, 22050);
-  const src = silentCtx.createBufferSource();
-  src.buffer = buf;
-  src.connect(silentCtx.destination);
-  src.start(0);
-  src.onended = () => silentCtx.close();
+  // Also warm up AudioContext for any browsers that need it
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const buf = ctx.createBuffer(1, 1, 22050);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.connect(ctx.destination);
+    src.start(0);
+    src.onended = () => ctx.close();
+  } catch(e) {}
 }
 
 // Shuffle-bag queues: guarantee no immediate repeats, even distribution
