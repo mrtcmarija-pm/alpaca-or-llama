@@ -91,6 +91,7 @@
     width: 180px;
     height: auto;
     margin-bottom: 36px;
+    margin-left: -38px; /* offset so text centers, not PNG bounding box (star bleeds left) */
   }
 
   #landing .landing-illo-img {
@@ -140,6 +141,7 @@
   .header-logo-wrap .logo-img {
     height: 56px;
     width: auto;
+    margin-left: -26px; /* offset so text centers, not PNG bounding box (star bleeds left) */
   }
 
   /* --- Card Area ---
@@ -348,13 +350,17 @@
     font-family: "Almono RNIDS", system-ui, sans-serif;
     font-weight: 600;
     font-size: 20px;
-    line-height: 20px;
+    line-height: 1;
     letter-spacing: -1px;
     color: #464646;
     text-align: center;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
+    /* Simulate Figma "cap height to baseline" vertical trim:
+       nudge text up slightly to optically center capital letters */
+    padding-top: 3px;
+    padding-bottom: 0;
   }
   #end-btn.visible { display: flex; }
 
@@ -881,9 +887,7 @@ function onPC(e) {
   if (!dragging) return;
   dragging = false;
   removePtrListeners();
-  // On Chrome/Mac, pointercancel can fire instead of pointerup mid-swipe.
-  // Try to commit if threshold was met, otherwise snap back.
-  tryCommit(ptCurrDX, ptVelocity);
+  snapBack();
 }
 
 function removePtrListeners() {
