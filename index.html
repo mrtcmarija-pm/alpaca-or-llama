@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Alpaca or Llama?</title>
-<link rel="icon" type="image/png" href="images/ui/landing_illustration.png">
+<link rel="icon" type="image/png" href="favicon.png">
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-title" content="Alpaca or Llama">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -357,8 +357,6 @@
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
-    /* Simulate Figma "cap height to baseline" vertical trim:
-       nudge text up slightly to optically center capital letters */
     padding-top: 3px;
     padding-bottom: 0;
   }
@@ -887,7 +885,9 @@ function onPC(e) {
   if (!dragging) return;
   dragging = false;
   removePtrListeners();
-  snapBack();
+  // On Chrome/Mac, pointercancel can fire instead of pointerup mid-swipe.
+  // Try to commit if threshold was met, otherwise snap back.
+  tryCommit(ptCurrDX, ptVelocity);
 }
 
 function removePtrListeners() {
