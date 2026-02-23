@@ -14,7 +14,7 @@
     src: url("fonts/AlmonoRNIDS-SemiBold.woff2") format("woff2");
     font-weight: 600;
     font-style: normal;
-    font-display: swap;
+    font-display: block;
   }
 
   *, *::before, *::after {
@@ -91,7 +91,7 @@
     width: 180px;
     height: auto;
     margin-bottom: 36px;
-    margin-left: -38px; /* offset so text centers, not PNG bounding box (star bleeds left) */
+    margin-left: -38px;
   }
 
   #landing .landing-illo-img {
@@ -141,7 +141,7 @@
   .header-logo-wrap .logo-img {
     height: 56px;
     width: auto;
-    margin-left: -26px; /* offset so text centers, not PNG bounding box (star bleeds left) */
+    margin-left: -26px;
   }
 
   /* --- Card Area ---
@@ -472,10 +472,14 @@ const CARDS_DATA = (function() {
 // ============================================================
 const SOUNDS = {};
 let audioUnlocked = false;
+let audioCtx = null;
 
 function initAudio() {
   if (audioUnlocked) return;
   audioUnlocked = true;
+
+  // Create a single shared AudioContext — must happen inside user gesture
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
   const files = {
     correct: ['sounds/correct_1.m4a', 'sounds/correct_2.m4a', 'sounds/correct_3.m4a'],
@@ -484,11 +488,17 @@ function initAudio() {
     lose:    ['sounds/lose.m4a'],
   };
 
+  // Fetch and fully decode every file into an AudioBuffer.
+  // Decoded buffers play instantly with zero delay — no decode step at playtime.
   for (const [key, paths] of Object.entries(files)) {
     SOUNDS[key] = paths.map(src => {
-      const a = new Audio(src);
-      a.preload = 'auto';
-      return a;
+      const entry = { buffer: null };
+      fetch(src)
+        .then(r => r.arrayBuffer())
+        .then(ab => audioCtx.decodeAudioData(ab))
+        .then(buf => { entry.buffer = buf; })
+        .catch(() => {});
+      return entry;
     });
   }
 }
@@ -501,15 +511,12 @@ function getNextFromBag(key) {
   if (!variants || variants.length === 0) return null;
   if (variants.length === 1) return variants[0];
 
-  // Refill and shuffle bag when empty
   if (!SOUND_BAGS[key] || SOUND_BAGS[key].length === 0) {
     const shuffled = [...variants];
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
-    // Avoid repeating the last sound from the previous bag
-    // by swapping the first element if it matches the last played
     if (SOUND_BAGS[key + '_last'] && shuffled[0] === SOUND_BAGS[key + '_last']) {
       const swapIdx = Math.floor(Math.random() * (shuffled.length - 1)) + 1;
       [shuffled[0], shuffled[swapIdx]] = [shuffled[swapIdx], shuffled[0]];
@@ -518,34 +525,37 @@ function getNextFromBag(key) {
   }
 
   const next = SOUND_BAGS[key].shift();
-  SOUND_BAGS[key + '_last'] = next; // remember for next bag refill
+  SOUND_BAGS[key + '_last'] = next;
   return next;
 }
 
-// Track all currently playing clones so we can stop them
-const activeSounds = new Set();
+// Track active source nodes so we can stop them
+const activeSources = new Set();
 
 function stopAllSounds() {
-  for (const clone of activeSounds) {
-    clone.pause();
-    clone.currentTime = 0;
+  for (const src of activeSources) {
+    try { src.stop(); } catch(e) {}
   }
-  activeSounds.clear();
+  activeSources.clear();
 }
 
 function playSound(key) {
-  const source = getNextFromBag(key);
-  if (!source) return;
-  const clone = source.cloneNode();
-  activeSounds.add(clone);
-  clone.addEventListener('ended', () => activeSounds.delete(clone));
-  clone.play().catch(() => {});
+  if (!audioCtx) return;
+  const entry = getNextFromBag(key);
+  if (!entry || !entry.buffer) return; // not yet decoded, skip gracefully
+  const src = audioCtx.createBufferSource();
+  src.buffer = entry.buffer;
+  src.connect(audioCtx.destination);
+  activeSources.add(src);
+  src.addEventListener('ended', () => activeSources.delete(src));
+  src.start(0);
 }
 
 function soundCorrect() { playSound('correct'); }
 function soundWrong()   { playSound('wrong');   }
 function soundWin()     { playSound('win');      }
 function soundLose()    { playSound('lose');     }
+
 
 // ============================================================
 //  SHOE RANDOMIZER
