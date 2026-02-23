@@ -881,7 +881,9 @@ function onPC(e) {
   if (!dragging) return;
   dragging = false;
   removePtrListeners();
-  snapBack();
+  // On Chrome/Mac, pointercancel can fire instead of pointerup mid-swipe.
+  // Try to commit if threshold was met, otherwise snap back.
+  tryCommit(ptCurrDX, ptVelocity);
 }
 
 function removePtrListeners() {
